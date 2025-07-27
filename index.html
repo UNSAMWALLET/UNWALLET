@@ -1,104 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UN-SAM Wallet Login</title>
   <style>
     body {
-      background-color: #ffffff;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
+      background-color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
     .container {
       text-align: center;
+      border: 2px solid orange;
       padding: 40px;
-      margin-top: 100px;
-      background-color: rgba(255, 255, 255, 0.6);
-      border: 1px solid #ffc107;
-      width: 90%;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      border-radius: 12px;
+      border-radius: 10px;
+      background-color: #fff;
     }
     h1 {
       color: black;
-      margin-bottom: 20px;
     }
-    #login-btn {
-      background-color: #000000;
-      color: #ffc107;
+    button {
+      background-color: black;
+      color: orange;
       padding: 12px 24px;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
       font-size: 16px;
-      margin-top: 40px;
+      cursor: pointer;
     }
-    #login-btn:hover {
-      background-color: #333;
+    button:hover {
+      background-color: #222;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>UN-SAM WALLET</h1>
-    <p>Connect with Google to continue</p>
-    <button id="login-btn">CONNECT TO SLJR</button>
-  </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<div class="container">
+  <h1>UN-SAM WALLET</h1>
+  <button id="loginBtn">CONNECT TO SLJR</button>
+</div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA0Qhb6FpIGKqWHwo-0pOvvX7bBRh-9FHY",
-      authDomain: "sljr-e-sports.firebaseapp.com",
-      projectId: "sljr-e-sports",
-      storageBucket: "sljr-e-sports.appspot.com",
-      messagingSenderId: "568709951241",
-      appId: "1:568709951241:web:75498cdedbc058c06e2dd8",
-      measurementId: "G-QQ7MWDW2VD"
-    };
+<!-- Correct Firebase CDN with compat version -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyA0Qhb6FpIGKqWHwo-0pOvvX7bBRh-9FHY",
+    authDomain: "sljr-e-sports.firebaseapp.com",
+    projectId: "sljr-e-sports",
+    storageBucket: "sljr-e-sports.appspot.com",
+    messagingSenderId: "568709951241",
+    appId: "1:568709951241:web:75498cdedbc058c06e2dd8"
+  };
 
-    const loginBtn = document.getElementById("login-btn");
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    loginBtn.addEventListener("click", () => {
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then((result) => {
-          const user = result.user;
-          const uid = user.uid;
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      if (!user || !user.uid) return alert("Login failed");
 
-          // Check if user exists in SLJR E-SPORTS
-          db.collection("users").doc(uid).get()
-            .then((doc) => {
-              if (doc.exists) {
-                // Save session and redirect
-                localStorage.setItem("unsam_uid", uid);
-                window.location.href = "dashboard.html";
-              } else {
-                alert("NO ACCOUNT FOUND IN SLJR E-SPORTS");
-                auth.signOut();
-              }
-            })
-            .catch((err) => {
-              console.error(err);
-              alert("Error checking account.");
-            });
-        })
-        .catch((err) => {
-          console.error(err);
-          alert("Login failed.");
-        });
-    });
-  </script>
+      const doc = await db.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        localStorage.setItem("unsam_uid", user.uid);
+        window.location.href = "dashboard.html";
+      } else {
+        alert("You are not registered in SLJR E-SPORTS database.");
+        await auth.signOut();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Login error: " + error.message);
+    }
+  });
+</script>
+
 </body>
 </html>
