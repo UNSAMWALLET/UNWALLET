@@ -3,99 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>UN-SAM Dashboard</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <title>SLJR E-SPORTS Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap">
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #ffffff;
-      color: #000;
+      padding: 0;
+      background-color: white;
+      font-family: 'Orbitron', sans-serif;
+      color: black;
     }
-    header {
-      background-color: #000;
-      color: #FFD700;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.8rem;
-    }
+
     .container {
-      max-width: 500px;
-      margin: 40px auto;
+      max-width: 400px;
+      margin: 60px auto;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid black;
+      border-radius: 10px;
       padding: 30px;
-      background: rgba(255, 255, 255, 0.85);
-      border: 2px solid #FFD700;
-      border-radius: 12px;
-    }
-    .title {
-      font-size: 1.5rem;
       text-align: center;
-      color: #000;
+      box-shadow: 0 0 10px yellow;
     }
-    .balance {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 2.2rem;
-      color: #FFD700;
-      font-weight: bold;
+
+    h1 {
+      font-size: 26px;
+      color: black;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
-    .logout-btn {
-      margin-top: 40px;
-      display: block;
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      background-color: #000;
-      color: #FFD700;
+
+    .info {
+      font-size: 16px;
+      margin: 10px 0;
+      color: #222;
+    }
+
+    .connect-btn {
+      margin-top: 50px;
+      background-color: black;
+      color: yellow;
       border: none;
+      padding: 14px 20px;
       border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
+      width: 100%;
+    }
+
+    .connect-btn:hover {
+      background-color: yellow;
+      color: black;
     }
   </style>
 </head>
 <body>
-  <header>UN-SAM WALLET</header>
   <div class="container">
-    <div class="title">Welcome to UN-SAM</div>
-    <div class="balance">Balance: ₹<span id="balance">Loading...</span></div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <h1>SLJR DASHBOARD</h1>
+    <p class="info">Welcome to your account.</p>
+    <p class="info" id="user-email">Checking login...</p>
+    <button class="connect-btn" onclick="logout()">Logout</button>
   </div>
 
-  <script>
+  <!-- Firebase JS SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyA0Qhb6FpIGKqWHwo-0pOvvX7bBRh-9FHY",
       authDomain: "sljr-e-sports.firebaseapp.com",
       projectId: "sljr-e-sports",
-      storageBucket: "sljr-e-sports.appspot.com",
+      storageBucket: "sljr-e-sports.firebasestorage.app",
       messagingSenderId: "568709951241",
       appId: "1:568709951241:web:75498cdedbc058c06e2dd8",
       measurementId: "G-QQ7MWDW2VD"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
 
-    auth.onAuthStateChanged(async user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        const userId = user.uid;
-        const doc = await db.collection("users").doc(userId).get();
-        if (doc.exists) {
-          const data = doc.data();
-          document.getElementById("balance").textContent = data.balance || "0.00";
-        } else {
-          alert("NO ACCOUNT FOUND IN SLJR E-SPORTS");
-          window.location.href = "login.html";
-        }
+        document.getElementById("user-email").innerText = "Logged in as: " + user.email;
       } else {
-        window.location.href = "login.html";
+        alert("NO ACCOUNT FOUND IN SLJR E-SPORTS");
+        window.location.href = "login.html"; // or redirect wherever login is
       }
     });
 
-    function logout() {
-      auth.signOut().then(() => {
+    window.logout = function () {
+      signOut(auth).then(() => {
         window.location.href = "login.html";
       });
     }
