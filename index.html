@@ -6,88 +6,54 @@
   <title>UN-SAM Wallet Login</title>
   <style>
     body {
-      margin: 0;
+      background-color: #ffffff;
       font-family: 'Segoe UI', sans-serif;
-      background-color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: #000;
+      margin: 0;
+      padding: 0;
     }
-
     .container {
-      background-color: rgba(0, 0, 0, 0.05);
-      border: 2px solid black;
-      border-radius: 15px;
-      padding: 30px 40px;
       text-align: center;
-      max-width: 350px;
+      padding: 40px;
+      margin-top: 100px;
+      background-color: rgba(255, 255, 255, 0.6);
+      border: 1px solid #ffc107;
       width: 90%;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 12px;
     }
-
     h1 {
-      color: #f4c300; /* Yellow */
-      margin-bottom: 10px;
-    }
-
-    .logo {
-      font-size: 22px;
-      font-weight: bold;
+      color: black;
       margin-bottom: 20px;
-      color: #000;
     }
-
-    #loginBtn {
-      background-color: #000;
-      color: white;
+    #login-btn {
+      background-color: #000000;
+      color: #ffc107;
+      padding: 12px 24px;
       border: none;
-      padding: 12px 25px;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 15px;
       font-size: 16px;
+      margin-top: 40px;
     }
-
-    #loginBtn:hover {
-      background-color: #222;
-    }
-
-    .connect-btn {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #f4c300;
-      border: 2px solid #000;
-      color: black;
-      font-weight: bold;
-      padding: 10px 20px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .connect-btn:hover {
-      background-color: #ffd700;
+    #login-btn:hover {
+      background-color: #333;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">UN-SAM WALLET</div>
-    <h1>Login</h1>
-    <button id="loginBtn">Login with Google</button>
+    <h1>UN-SAM WALLET</h1>
+    <p>Connect with Google to continue</p>
+    <button id="login-btn">CONNECT TO SLJR</button>
   </div>
 
-  <p class="connect-btn">SELECT YOUR SLJR ACCOUNT</p>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 
-  <!-- Firebase App -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyA0Qhb6FpIGKqWHwo-0pOvvX7bBRh-9FHY",
       authDomain: "sljr-e-sports.firebaseapp.com",
@@ -98,31 +64,40 @@
       measurementId: "G-QQ7MWDW2VD"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const provider = new GoogleAuthProvider();
-    const db = getFirestore(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        const uid = user.uid;
+    const loginBtn = document.getElementById("login-btn");
 
-        const userRef = doc(db, "users", uid);
-        const userSnap = await getDoc(userRef);
+    loginBtn.addEventListener("click", () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          const uid = user.uid;
 
-        if (userSnap.exists()) {
-          // User exists, store session and redirect
-          localStorage.setItem("UNSAM_USER", uid);
-          window.location.href = "dashboard.html";
-        } else {
-          alert("❌ No account found in SLJR E-SPORTS");
-        }
-      } catch (error) {
-        console.error("Login failed:", error);
-        alert("Login error. Try again.");
-      }
+          // Check if user exists in SLJR E-SPORTS
+          db.collection("users").doc(uid).get()
+            .then((doc) => {
+              if (doc.exists) {
+                // Save session and redirect
+                localStorage.setItem("unsam_uid", uid);
+                window.location.href = "dashboard.html";
+              } else {
+                alert("NO ACCOUNT FOUND IN SLJR E-SPORTS");
+                auth.signOut();
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+              alert("Error checking account.");
+            });
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Login failed.");
+        });
     });
   </script>
 </body>
