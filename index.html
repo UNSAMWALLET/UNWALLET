@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>UN-SAM Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Styles -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: white;
+      color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid black;
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 10px #ffc400;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #000;
+    }
+
+    #loginBtn {
+      margin-top: 20px;
+      padding: 12px 30px;
+      background-color: #ffc400;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      border: 2px solid black;
+    }
+
+    #loginBtn:hover {
+      background-color: #ffeb3b;
+    }
+
+    #connectBtn {
+      margin-top: 50px;
+      position: fixed;
+      bottom: 30px;
+      padding: 10px 25px;
+      font-size: 14px;
+      border-radius: 6px;
+      background-color: black;
+      color: white;
+      border: 2px solid #ffc400;
+      cursor: pointer;
+    }
+
+    #popup {
+      display: none;
+      background: #ffdddd;
+      color: red;
+      padding: 10px;
+      margin-top: 20px;
+      border: 1px solid red;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>SLJR x UN-SAM wallet</h1>
+    <button id="loginBtn">Connect to SLJR</button>
+    <div id="popup">NO ACCOUNT FOUND IN SLJR E-SPORTS</div>
+  </div>
+
+  <buttoid="connectBtn">SELECT YOUR SLJR REGESTERD ACCOUNT</button>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyA0Qhb6FpIGKqWHwo-0pOvvX7bBRh-9FHY",
+      authDomain: "sljr-e-sports.firebaseapp.com",
+      projectId: "sljr-e-sports",
+      storageBucket: "sljr-e-sports.appspot.com",
+      messagingSenderId: "568709951241",
+      appId: "1:568709951241:web:75498cdedbc058c06e2dd8",
+      measurementId: "G-QQ7MWDW2VD"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if (userDoc.exists) {
+          window.location.href = "dashboard.html"; // Redirect to UN-SAM dashboard
+        } else {
+          document.getElementById("popup").style.display = "block";
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        alert("Error logging in");
+      }
+    });
+
+    document.getElementById("connectBtn").addEventListener("click", () => {
+      window.location.href = "https://sljr-e-sports.com"; // change this to actual SLJR site if needed
+    });
+  </script>
+</body>
+</html>
