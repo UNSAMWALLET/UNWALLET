@@ -3,73 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SLJR E-SPORTS Dashboard</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap">
+  <title>UN-SAM WALLET - Dashboard</title>
   <style>
     body {
+      background-color: black;
+      color: white;
+      font-family: 'Courier New', monospace;
       margin: 0;
       padding: 0;
-      background-color: white;
-      font-family: 'Orbitron', sans-serif;
-      color: black;
     }
-
-    .container {
-      max-width: 400px;
-      margin: 60px auto;
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid black;
-      border-radius: 10px;
-      padding: 30px;
+    header {
+      background-color: #f0c040;
+      padding: 1rem;
       text-align: center;
-      box-shadow: 0 0 10px yellow;
-    }
-
-    h1 {
-      font-size: 26px;
+      font-size: 24px;
       color: black;
+      font-weight: bold;
+    }
+    .container {
+      padding: 20px;
+    }
+    .balance-box {
+      background-color: #222;
+      padding: 20px;
+      border: 2px solid gold;
+      border-radius: 10px;
       margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
     }
-
-    .info {
-      font-size: 16px;
-      margin: 10px 0;
-      color: #222;
-    }
-
-    .connect-btn {
-      margin-top: 50px;
-      background-color: black;
-      color: yellow;
+    .logout {
+      background-color: red;
+      color: white;
       border: none;
-      padding: 14px 20px;
-      border-radius: 6px;
+      padding: 10px 15px;
       font-size: 16px;
       cursor: pointer;
-      width: 100%;
-    }
-
-    .connect-btn:hover {
-      background-color: yellow;
-      color: black;
+      float: right;
     }
   </style>
 </head>
 <body>
+
+  <header>
+    UN-SAM WALLET DASHBOARD
+    <button class="logout" onclick="logout()">Logout</button>
+  </header>
+
   <div class="container">
-    <h1>SLJR DASHBOARD</h1>
-    <p class="info">Welcome to your account.</p>
-    <p class="info" id="user-email">Checking login...</p>
-    <button class="connect-btn" onclick="logout()">Logout</button>
+    <div class="balance-box">
+      <h2>Your Balance:</h2>
+      <h3 id="balance">Loading...</h3>
+    </div>
   </div>
 
-  <!-- Firebase JS SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+  <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyA0Qhb6FpIGKqWHwo-0pOvvX7bBRh-9FHY",
       authDomain: "sljr-e-sports.firebaseapp.com",
@@ -80,20 +72,31 @@
       measurementId: "G-QQ7MWDW2VD"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("user-email").innerText = "Logged in as: " + user.email;
+    // Check login session
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "login.html"; // Not logged in
       } else {
-        alert("NO ACCOUNT FOUND IN SLJR E-SPORTS");
-        window.location.href = "login.html"; // or redirect wherever login is
+        const uid = user.uid;
+        const doc = await db.collection('users').doc(uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById("balance").innerText = "₹ " + (data.balance || 0);
+        } else {
+          alert("User not found.");
+          auth.signOut();
+        }
       }
     });
 
-    window.logout = function () {
-      signOut(auth).then(() => {
+    // Logout function
+    function logout() {
+      auth.signOut().then(() => {
+        localStorage.clear();
         window.location.href = "login.html";
       });
     }
